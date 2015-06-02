@@ -1,6 +1,6 @@
 # resourcespace_get_resources
 Resourcespace Plugin to get rersources by Collections including writing of metadata
-Tested for versions 7.1 and 7.2
+Tested with versions 7.1 and 7.2
 
 What it is:
 
@@ -24,4 +24,4 @@ How to install:
 
 1. Simply download and put all files (including the folders) into the Resourcespace plugins folder
 
-2. Activate the plugin in Team Center
+2. Activate the plugin in Team Center / System setup / Manage Plugins
