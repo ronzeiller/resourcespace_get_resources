@@ -4,8 +4,7 @@
  * by Ronnie Zeiller - www.zeiller.eu
  * @package ResourceSpace
  */
-function HookGet_resourcesTeam_homeCustomteamfunction()
-	{
+function HookGet_resourcesTeam_homeCustomteamfunction() {
 	global $baseurl, $lang;
 	
     if (checkperm("o"))
@@ -14,6 +13,4 @@ function HookGet_resourcesTeam_homeCustomteamfunction()
 		?><li><a href="<?php echo $baseurl ?>/plugins/get_resources/pages/copy_selected_collections.php"><?php echo $lang["get_resources_plugin_name"]?></a></li>
 		<?php
 		}
-		?>
-	<?php
-	}
+}

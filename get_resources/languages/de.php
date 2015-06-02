@@ -5,7 +5,6 @@
  * by Ronnie Zeiller - www.zeiller.eu
  */
 
-# page 1: copy_selected_collections.php
 $lang["get_resources_plugin_name"]="Kopiere Ressourcen einer oder mehrerer Kollektionen inkl. Meta-Daten aus Datenbank";
 $lang["to"]=' nach: ';
 $lang["select_collections"]="Auswahl der Kollektionen zum Kopieren der enthaltenen Ressourcen";

@@ -5,7 +5,6 @@
  * by Ronnie Zeiller - www.zeiller.eu
  */
 
-# page 1: sownload_select_collections.php
 $lang["get_resources_plugin_name"]="Copy resources from one or more collections including metadata";
 $lang["to"]=' to: ';
 $lang["submitbutton"]="Start Copy Resources";

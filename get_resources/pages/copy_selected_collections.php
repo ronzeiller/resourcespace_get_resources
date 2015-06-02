@@ -260,7 +260,6 @@ if ($submitted != "") {
 							multiplier: 1.5, // the amount to expand the timeout by if the response hasn't changed (up to maxTimeout)
 							type: 'text'           // response type - text, xml, json, etc.  
 
-
 				}, function (remoteData, success, xhr, handle) {
 					if (remoteData.indexOf("file ") != -1) {	// file 1 von 10
 						var res = remoteData.split(" ",4);

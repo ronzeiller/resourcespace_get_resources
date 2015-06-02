@@ -157,7 +157,7 @@ function schreibe_metadata($path, $ref) {
 		}
 		# Add the filename to the command string.
 		## original: $command.= " " . escapeshellarg($tmpfile);
-		## PHP escapeshellarg entfernt deutsche Umlaute!!!!!!
+		## PHP escapeshellarg kills German Umlaute!!!!!!
 		
 		//$command.= " " . escapeshellarg($path);
 		$command.= " '".str_replace("'","\\'",$path)."'";

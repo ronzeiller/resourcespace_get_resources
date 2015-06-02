@@ -4,7 +4,7 @@
  * by Ronnie Zeiller - www.zeiller.eu
  * @package ResourceSpace
  * 
- * Called by manage_resources.php
+ * Called by copy_selected_collections.php
  * reads content of progress_file.txt
  *		1. no content -> preparing....
  *		2. content file 1 von x......
