@@ -25,3 +25,10 @@ How to install:
 1. Simply download and put all files (including the folders) into the Resourcespace plugins folder
 
 2. Activate the plugin in Team Center / System setup / Manage Plugins
+
+
+What the Plugin doesn´t do:
+
+1. The Plugin is not tested on Windows Server. Especially writing folder names might be a problem. (remember the folders will be called like the collection names)
+
+2. There is no sanitising of Collection Names -> Folder Names 
