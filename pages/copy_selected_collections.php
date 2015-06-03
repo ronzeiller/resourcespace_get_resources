@@ -1,7 +1,12 @@
 <?php
 /**
- * get_resources Plugin  starting page V0.9 * 
+ * get_resources Plugin  starting page V0.9.1 * 
  * @package ResourceSpace
+ * 
+ * 3.6.2015
+ *		Line 133: mkdir ( get_temp_dir(false, '')."/".$collection[$i]['name'], 0755, true);
+ *		2nd and 3rd option added to prevent error: mkdir(): No such file or directory
+ * 
  */
 include dirname(__FILE__)."/../../../include/db.php";
 include dirname(__FILE__)."/../../../include/authenticate.php";if (!checkperm('t')) {exit ($lang['error-permissiondenied']);}
@@ -130,7 +135,7 @@ if ($submitted != "") {
 	for ($i=0;$i<count($collection);$i++) {
 
 		if (!is_dir(get_temp_dir(false, '')."/".$collection[$i]['name'])) {
-			mkdir ( get_temp_dir(false, '')."/".$collection[$i]['name'] );
+			mkdir ( get_temp_dir(false, '')."/".$collection[$i]['name'], 0755, true);
 			$deleteFolders[] = get_temp_dir(false, '')."/".$collection[$i]['name'];
 		}
 
