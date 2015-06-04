@@ -1,15 +1,20 @@
 <?php
 /**
- * get_resources Plugin  starting page V0.9.1 * 
+ * get_resources Plugin  starting page V1.0 * 
  * @package ResourceSpace
  * 
+ * 4.6.2015
+ *		Added config for basic settings and debug
+ *		corrected writing pathnames on Windows with charset iso-8859-15
+ *		Now writing metadatas into temp-file first then move it with original filename into collection folder
+ * 
  * 3.6.2015
- *		Line 133: mkdir ( get_temp_dir(false, '')."/".$collection[$i]['name'], 0755, true);
+ *		correct mkdir ( get_temp_dir(false, '')."/".$collection[$i]['name'], 0755, true);
  *		2nd and 3rd option added to prevent error: mkdir(): No such file or directory
  * 
  */
 include dirname(__FILE__)."/../../../include/db.php";
-include dirname(__FILE__)."/../../../include/authenticate.php";if (!checkperm('t')) {exit ($lang['error-permissiondenied']);}
+include dirname(__FILE__)."/../../../include/authenticate.php";if (!checkperm($permgroup)) {exit ($lang['error-permissiondenied']);}
 include dirname(__FILE__)."/../../../include/general.php";
 include_once dirname(__FILE__)."/../../../include/research_functions.php";
 include_once dirname(__FILE__)."/../../../include/resource_functions.php";
@@ -19,6 +24,9 @@ include_once dirname(__FILE__)."/../inc/get_resources_functions.php";
 
 global $baseurl;
 include dirname(__FILE__)."/../../../include/header.php";
+
+## Write message into debug, if activated
+debug("Start: ".$lang["get_resources_plugin_name"]);
 
 ## getting all collections but not 'My Collection'
 $collections = sql_query("SELECT ref, name FROM `collection` WHERE name <> 'My Collection' ORDER BY name asc");
@@ -81,7 +89,7 @@ if ($makeZip) {
 ## start copying collections and images
 if ($submitted != "") {
 	## progress file with counts of total and copied resources
-	$progress_file=get_temp_dir(false,'') . "/progress_file.txt";
+	$progress_file=get_temp_dir(false,'')."/progress_file.txt";
 	if (!file_exists($progress_file)){
 			touch($progress_file);
 	}
@@ -133,24 +141,29 @@ if ($submitted != "") {
 
 	$actual_image=0;
 	for ($i=0;$i<count($collection);$i++) {
-
-		if (!is_dir(get_temp_dir(false, '')."/".$collection[$i]['name'])) {
-			mkdir ( get_temp_dir(false, '')."/".$collection[$i]['name'], 0755, true);
-			$deleteFolders[] = get_temp_dir(false, '')."/".$collection[$i]['name'];
+		## get the pathname where to store the resources from the Collection name
+		$collection_path = get_temp_dir(false, '').'/'.$collection[$i]['name'];
+		## convert pathname to correct charset
+		//$collection_path = preg_replace('/[^a-zA-Z0-9_%\[().\]\\/-]/s', '', $collection_path);
+		$collection_path = convert_to_server_charset($collection_path);
+		if (!is_dir($collection_path)) {
+			mkdir ( $collection_path, 0775, true);
+			chmod($collection_path, 0775);
+			$deleteFolders[] = $collection_path;
 		}
 
 		update_log_file("\r\n". $lang["collectionname"].': '.$collection[$i]['name'],'a');
 
 		if ($makeZip) {
-			# Define the archive file
-			$zipfile = str_replace(" ", "_",get_temp_dir(false, $id) . "/".$collection[$i]['name']);
-
+			if ($write_zip_for_download) {
+				$zipfile = str_replace(" ", "_",$collection_path);
+			}
 			if ($use_zip_extension) {
-				//$progress_file = $usertempdir . "/progress_file.txt";
+				//$progress_file = $usertempdir."/progress_file.txt";
 				$zipfile.= ".zip";
 				$zip = new ZipArchive();
 				$zip->open($zipfile, ZIPARCHIVE::CREATE);
-				update_log_file("zipped ----> ".$zipfile,'a');
+				update_log_file("zipped to ----> ".$zipfile,'a');
 			}
 		}
 
@@ -160,37 +173,39 @@ if ($submitted != "") {
 			$db_image_ref = $collection[$i]['images_ref'][$n];
 
 			if (file_exists($db_image_pathname)) {
-				# Retrieve the original file name
+
+				## 1. Copy File
+				$tempfile = get_temp_dir(false, '').'/'.basename($db_image_pathname);
+				copy($db_image_pathname, $tempfile);
+				
+				## 2. Write Metadata
+				$metadata_write_ok = schreibe_metadata($tempfile, $db_image_ref);
+				
+				## 3. Move tempfile to Original Filename (with charset corrections) into the Collection folder
+				## Retrieve the original file name
 				$orig_filename = '';
 				$orig_filename = get_data_by_field($db_image_ref, $filename_field);
-
-				update_log_file($orig_filename,'a');	// var_dump($orig_filename);
-				$newpath = get_temp_dir(false, '') . "/" . $collection[$i]['name']. "/" . $orig_filename;
-				# Convert $filename to the charset used on the server.
-				if (!isset($server_charset)) {
-					$to_charset = 'UTF-8';
-				} else {
-					if ($server_charset != "") {
-						$to_charset = $server_charset;
-					} else {
-						$to_charset = 'UTF-8';
-					}
-				}
-
-				$newpath = mb_convert_encoding($newpath, $to_charset, 'UTF-8');
-
-				## Copy Original Resource to the original filename in a folder called 
-				## by the name of the Collection (at the moment in filestore/tmp)
-				//update_log_file("$db_image_pathname -> $newpath", 'a');
-				copy($db_image_pathname, $newpath);
-				$deletion_array[] = $newpath;
-				$metadata_write_ok = schreibe_metadata($newpath, $db_image_ref);
+				$new_filename  = convert_to_server_charset($orig_filename);
 				
-				if ($metadata_write_ok == FALSE) {
-					update_log_file($lang['metadatawrite_wrong'] . $orig_filename, 'a');
+				$logfilemessage = '';
+				if ($orig_filename == $new_filename) {
+					$logfilemessage = $orig_filename;	// var_dump($orig_filename);
+					$new_filename = $orig_filename;
+				} else {
+					$logfilemessage = $orig_filename." --> ".$new_filename;
 				}
+				$newpath = $collection_path . '/' . $new_filename;
+				rename($tempfile, $newpath);				
+				chmod($newpath, 0775);
+				$deletion_array[] = $newpath;
+				
 				update_copy_progress_file('file '.$actual_image.' von '.$amount_images_total);
-
+				if ($metadata_write_ok == FALSE) {
+					$logfilemessage.= ' --> '.$lang['metadatawrite_wrong'];
+				} else {
+					
+				}
+				update_log_file($logfilemessage, 'a');
 				if (($makeZip) && ($use_zip_extension)) {
 					$zip->addFile($newpath,$orig_filename);
 				}
@@ -293,7 +308,10 @@ if ($submitted != "") {
 
 	<form id='myform' >
 		
-		<iframe id="downloadiframe" <?php if (!$debug_direct_download) { ?>style="display:none;"<?php } ?>></iframe>
+		<iframe id="downloadiframe" 
+			<?php if (!$debug_direct_download) { ?>style="display:none;"<?php } 
+				else {?>style="width:100%;"<?php } ?> >
+		</iframe>
 		
 		<div class="Question">
 			<div id="makeZipCheckbox">
