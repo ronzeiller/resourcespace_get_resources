@@ -142,17 +142,20 @@ if ($submitted != "") {
 	$actual_image=0;
 	for ($i=0;$i<count($collection);$i++) {
 		## get the pathname where to store the resources from the Collection name
-		$collection_path = get_temp_dir(false, '').'/'.$collection[$i]['name'];
+		## sanitize Collection name
+		$collectionname = preg_replace('/[^A-Za-z0-9äöüÄÖÜß _ .-]/', '', $collection[$i]['name']);
+		$collection_path = get_temp_dir(false, '').'/'.$collectionname;
 		## convert pathname to correct charset
 		//$collection_path = preg_replace('/[^a-zA-Z0-9_%\[().\]\\/-]/s', '', $collection_path);
 		$collection_path = convert_to_server_charset($collection_path);
+		
 		if (!is_dir($collection_path)) {
 			mkdir ( $collection_path, 0775, true);
 			chmod($collection_path, 0775);
 			$deleteFolders[] = $collection_path;
 		}
 
-		update_log_file("\r\n". $lang["collectionname"].': '.$collection[$i]['name'],'a');
+		update_log_file("\r\n". $lang["collectionname"].': '.$collectionname,'a');
 
 		if ($makeZip) {
 			if ($write_zip_for_download) {
@@ -185,6 +188,8 @@ if ($submitted != "") {
 				## Retrieve the original file name
 				$orig_filename = '';
 				$orig_filename = get_data_by_field($db_image_ref, $filename_field);
+				## sanitize filename just in case it was edited in RS into some strange value
+				$orig_filename = preg_replace('/[^A-Za-z0-9äöüÄÖÜß _ .-]/', '', $orig_filename);
 				$new_filename  = convert_to_server_charset($orig_filename);
 				
 				$logfilemessage = '';
