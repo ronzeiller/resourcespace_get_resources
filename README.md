@@ -1,6 +1,7 @@
 # resourcespace_get_resources
 Resourcespace Plugin to get rersources by Collections including writing of metadata
-Tested with versions 7.1 and 7.2
+Tested with:
+Resourcespace versions 7.1 and 7.2 on Ubuntu 14.04 with Apache2, PHP Version 5.5.9-1ubuntu4.9, MySQL 5.5.43, ExifTool 9.46
 
 What it is:
 
