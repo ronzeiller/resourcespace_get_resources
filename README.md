@@ -19,6 +19,7 @@ What it is:
 7. A logfile is written
 
 8. All resources will be copied into the ../filestore/tmp folder
+9. Separated function for easy altering or correct metadatas, e.g. put (c) --> © in copyright
 
 How to install:
 
