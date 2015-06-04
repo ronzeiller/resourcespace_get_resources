@@ -9,6 +9,10 @@
  *				function convert_to_server_charset()
  */
 
+if (file_exists(dirname(__FILE__)."/../inc/convert_metadata.php")){
+	include_once 'convert_metadata.php';
+}
+
 function update_log_file($note, $param = 'w') {
 	global $log_file,$write_debuglog;
 	## $param kann a oder w sein, bei w wird ein neues file erzeugt
@@ -55,7 +59,7 @@ function message_alert($msg) {
 
 function schreibe_metadata($path, $ref) {
 
-	global $copyrightFlag, $exiftool_remove_existing, $storagedir, $exiftool_write, $exiftool_no_process, $mysql_charset, $exiftool_write_omit_utf8_conversion;
+	global $copyrightFlag, $convert_metadata, $exiftool_remove_existing, $storagedir, $exiftool_write, $exiftool_no_process, $mysql_charset, $exiftool_write_omit_utf8_conversion;
 
 	# Fetch file extension and resource type.
 	$resource_data = get_resource_data($ref);
@@ -168,11 +172,9 @@ function schreibe_metadata($path, $ref) {
 							$writevalue = mb_convert_encoding($writevalue, 'UTF-8');
 						}
 
-						if (function_exists('check_AIT')) {
-							$writevalue = check_AIT($writevalue, $group_tag);
-							if (($group_tag=='copyrightnotice')|| ($group_tag=='rights')) {
-								// update_log_file($writevalue.':'. $group_tag,'a');
-							}
+						## own conversions and adds to written metadata
+						if (function_exists('convert_metadata') &&($convert_metadata)) {
+							$writevalue = convert_metadata($writevalue, $group_tag);
 						}
 
 						$command.= escapeshellarg("-" . $group_tag . "=" . htmlentities($writevalue, ENT_QUOTES, "UTF-8")) . " ";
