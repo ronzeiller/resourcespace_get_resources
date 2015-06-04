@@ -22,3 +22,6 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 
 ## zipfiles for download get "_" instead of " "
 $write_zip_for_download = FALSE;
+
+## to activate the function for metadata conversions set to TRUE
+$convert_metadata=FALSE;
