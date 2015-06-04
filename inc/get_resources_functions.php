@@ -1,17 +1,45 @@
 <?php
 /**
- * get_resources Plugin  functions V0.9 * 
+ * get_resources Plugin  functions * 
  * @package ResourceSpace
  * by Ronnie Zeiller - www.zeiller.eu
+ * 
+ * 4.6.2015
+ *		new:	config file with bool $write_debuglog
+ *				function convert_to_server_charset()
  */
 
 function update_log_file($note, $param = 'w') {
-	global $log_file;
+	global $log_file,$write_debuglog;
 	## $param kann a oder w sein, bei w wird ein neues file erzeugt
-	$fp = fopen($log_file, $param);
-	$filedata = $note;
-	fwrite($fp, $filedata."\n");
-	fclose($fp);
+	if ($write_debuglog) {
+		$fp = fopen($log_file, $param);
+		$filedata = $note;
+		fwrite($fp, $filedata."\n");
+		fclose($fp);
+	}
+}
+
+function convert_to_server_charset($txt) {
+	global $running_windows,$server_charset;
+	
+	if ($running_windows) {
+		## set $to_charset allways to iso-8859-15 regardless RS config
+		$to_charset = 'iso-8859-15';
+	} else {
+		# Convert $filename to the charset used on the server.
+		if (!isset($server_charset)) {
+			$to_charset = 'UTF-8';
+		} else {
+			if ($server_charset != "") {
+				$to_charset = $server_charset;
+			} else {
+				$to_charset = 'UTF-8';
+			}
+		}
+	}
+	$txt = mb_convert_encoding($txt, $to_charset, 'UTF-8');
+	return $txt;		
 }
 
 function message_alert($msg) {
@@ -156,16 +184,13 @@ function schreibe_metadata($path, $ref) {
 				$command.= escapeshellarg("-copyrightflag=true")." ";
 		}
 		# Add the filename to the command string.
-		## original: $command.= " " . escapeshellarg($tmpfile);
-		## PHP escapeshellarg kills German Umlaute!!!!!!
-		
-		//$command.= " " . escapeshellarg($path);
-		$command.= " '".str_replace("'","\\'",$path)."'";
+		$command.= " " . escapeshellarg($path);
+
 		//update_log_file($command,'a');
 		# Perform the actual writing - execute the command string.
 		$output = run_command($command);
-		if (!$output) {return FALSE;} else {	return $path;}
+		if (!$output) {return FALSE;} else {	return TRUE;}
 	} else {
-		return false;
+		return TRUE;
 	}
 }
