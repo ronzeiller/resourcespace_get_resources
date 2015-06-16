@@ -158,8 +158,9 @@ if ($submitted != "") {
 		update_log_file("\r\n". $lang["collectionname"].': '.$collectionname,'a');
 
 		if ($makeZip) {
+			$zipfile = $collection_path;
 			if ($write_zip_for_download) {
-				$zipfile = str_replace(" ", "_",$collection_path);
+				$zipfile = str_replace(" ", "_",$zipfile);
 			}
 			if ($use_zip_extension) {
 				//$progress_file = $usertempdir."/progress_file.txt";
